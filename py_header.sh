@@ -3,7 +3,6 @@
 
 work_files=$(find . -name "*.py" -type f)
 
-
 for file in $work_files
 do
     if [[ -s "$file" ]]

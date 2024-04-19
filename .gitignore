@@ -1,0 +1,8 @@
+# python temp files
+__pycache__
+
+# mypy temp files
+.mypy_cache
+
+# session temp file
+saved_objects.json
