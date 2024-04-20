@@ -34,7 +34,7 @@ class BaseModel:
 
     def to_dict(self) -> dict[str, str]:
         """Return the __dict__ attribute of an instance."""
-        ins_dict = self.__dict__
+        ins_dict: dict = dict(self.__dict__)
         ins_dict["__class__"] = self.__class__.__name__
         ins_dict["created_at"] = self.created_at.isoformat()
         ins_dict["updated_at"] = self.updated_at.isoformat()

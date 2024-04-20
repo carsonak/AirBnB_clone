@@ -68,12 +68,12 @@ class HBNBCommand(cmd.Cmd):
             print("** instance id missing **")
             return
 
-        instance_key: str = ".".join(args[:2])
-        if instance_key not in models.storage._FileStorage__objects:
+        ins_key: str = ".".join(args[:2])
+        if ins_key not in models.storage._FileStorage__objects:  # type: ignore
             print("** instance id missing **")
             return
 
-        print(models.storage._FileStorage__objects[instance_key])
+        print(models.storage._FileStorage__objects[ins_key])  # type: ignore
 
     def do_destroy(self, line: str) -> None:
         """Delete the specified instance.
@@ -97,10 +97,10 @@ class HBNBCommand(cmd.Cmd):
             print("** instance id missing **")
             return
 
-        instance_key: str = ".".join(args[:2])
+        ins_key: str = ".".join(args[:2])
         try:
-            del models.storage._FileStorage__objects[instance_key]
-            models.storage._FileStorage__objects.pop(instance_key)
+            del models.storage._FileStorage__objects[ins_key]  # type: ignore
+            models.storage._FileStorage__objects.pop(ins_key)  # type: ignore
             models.storage.save()
         except KeyError:
             print("** instance id missing **")
@@ -154,8 +154,8 @@ class HBNBCommand(cmd.Cmd):
             print("** instance id missing **")
             return
 
-        instance_key: str = ".".join(args[:2])
-        if instance_key not in models.storage._FileStorage__objects:
+        ins_key: str = ".".join(args[:2])
+        if ins_key not in models.storage._FileStorage__objects:  # type: ignore
             print("** instance id missing **")
             return
 
@@ -166,7 +166,8 @@ class HBNBCommand(cmd.Cmd):
             print("** value missing **")
             return
 
-        ins: BaseModel = models.storage._FileStorage__objects[instance_key]
+        ins: BaseModel = \
+            models.storage._FileStorage__objects[ins_key]  # type: ignore
         setattr(ins, args[2], args[3])
         ins.save()
 
