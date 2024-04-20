@@ -6,3 +6,6 @@ __pycache__
 
 # session temp file
 saved_objects.json
+
+# vscode cofigurations
+.vscode

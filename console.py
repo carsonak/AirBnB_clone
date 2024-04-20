@@ -16,20 +16,28 @@ class HBNBCommand(cmd.Cmd):
     """Class for the HBNB shell."""
 
     prompt: str = "(hbnb) "
-    __available_classes: tuple[str, ...] = (
-        "BaseModel", "User", "Place", "State", "City", "Amenity", "Review")
+    __available_classes: dict[str, type] = {"BaseModel": BaseModel,
+                                            "User": User,
+                                            "Place": Place,
+                                            "State": State,
+                                            "City": City,
+                                            "Amenity": Amenity,
+                                            "Review": Review}
 
     def do_create(self, line: str) -> None:
-        """create <ClassName>: Creates and saves a new BaseModel instance.
+        """Create and save a new class instance.
+
+        Usage: create <ClassName>
 
         Arguments:
-            <ClassName>: mandatory name of the class to be instantiated.
-            Should be one of: BaseModel, .
+            <ClassName>: mandatory name of the class to be instantiated. The
+            class should be one of BaseModel, User, Place, State, City,
+            Amenity or Review.
         """
         if line:
-            args: list[str] = line.split(maxsplit=1)
-            if args[0] in self.__available_classes:
-                new_obj: BaseModel = globals()[args[0]]()
+            classname: str = line.split(maxsplit=1)[0]
+            if classname in self.__available_classes:
+                new_obj: BaseModel = self.__available_classes[classname]()
                 new_obj.save()
                 print(new_obj.id)
             else:
@@ -39,7 +47,9 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
 
     def do_show(self, line: str) -> None:
-        """show <ClassName> <id>: Displays the specified instance.
+        """Display the specified instance.
+
+        Usage: show <ClassName> <id>
 
         Arguments:
             <ClassName>: mandatory class name of the instance.
@@ -59,14 +69,16 @@ class HBNBCommand(cmd.Cmd):
             return
 
         instance_key: str = ".".join(args[:2])
-        if instance_key not in models.storage.__objects:
+        if instance_key not in models.storage._FileStorage__objects:
             print("** instance id missing **")
             return
 
-        print(models.storage.__objects[instance_key])
+        print(models.storage._FileStorage__objects[instance_key])
 
     def do_destroy(self, line: str) -> None:
-        """destroy <ClassName> <id>: Deletes the specified instance.
+        """Delete the specified instance.
+
+        Usage: destroy <ClassName> <id>
 
         Arguments:
             <ClassName>: mandatory class name of the instance.
@@ -87,14 +99,16 @@ class HBNBCommand(cmd.Cmd):
 
         instance_key: str = ".".join(args[:2])
         try:
-            del models.storage.__objects[instance_key]
-            models.storage.__objects.pop(instance_key)
+            del models.storage._FileStorage__objects[instance_key]
+            models.storage._FileStorage__objects.pop(instance_key)
             models.storage.save()
         except KeyError:
             print("** instance id missing **")
 
     def do_all(self, line: str) -> None:
-        """all [ClassName]: prints list of all objects or just of the specified class.
+        """Print a list of all objects or just of the specified class.
+
+        Usage: all [ClassName]
 
         Arguments:
             [ClassName]: optional class name of the instances to be printed.
@@ -117,13 +131,15 @@ class HBNBCommand(cmd.Cmd):
             print(instances_list)
 
     def do_update(self, line: str) -> None:
-        """update <class name> <id> <attribute name> '<attribute value>': updates an instance's attribute.
+        """Update an existing instance's attribute.
+
+        Usage: update <class name> <id> <attribute name> '<attribute value>'
 
         Arguments:
-            <classname>: compulsory class name of the instance.
-            <id>: compulsory id of the instance.
-            <attribute name>: compulsory name of the attribute to be updated.
-            <attribute value>: the new value of the attribute.
+            <classname>: mandatory class name of the instance.
+            <id>: mandatory id of the instance.
+            <attribute name>: mandatory name of the attribute to be updated.
+            <attribute value>: a string with the new value of the attribute.
         """
         if not line:
             print("** class name missing **")
@@ -139,7 +155,7 @@ class HBNBCommand(cmd.Cmd):
             return
 
         instance_key: str = ".".join(args[:2])
-        if instance_key not in models.storage.__objects:
+        if instance_key not in models.storage._FileStorage__objects:
             print("** instance id missing **")
             return
 
@@ -150,7 +166,7 @@ class HBNBCommand(cmd.Cmd):
             print("** value missing **")
             return
 
-        ins: BaseModel = models.storage.__objects[instance_key]
+        ins: BaseModel = models.storage._FileStorage__objects[instance_key]
         setattr(ins, args[2], args[3])
         ins.save()
 
@@ -159,12 +175,15 @@ class HBNBCommand(cmd.Cmd):
         return False
 
     def do_EOF(self, line: str) -> bool:
-        """Exit from the shell."""
+        """Exit the console."""
         print()
         return True
 
     def do_quit(self, line: str) -> bool:
-        """quit: Exits from the shell."""
+        """Exit the console.
+
+        Usage: quit
+        """
         return True
 
 
