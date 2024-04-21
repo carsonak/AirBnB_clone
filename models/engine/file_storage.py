@@ -2,6 +2,7 @@
 """Module for file_storage."""
 
 import json
+import os
 from models.base_model import BaseModel
 from models.user import User
 from models.place import Place
@@ -28,20 +29,23 @@ class FileStorage:
 
     def save(self) -> None:
         """Serialise all objects in __objects to a json file."""
-        json_dict: dict[str, dict[str, str]] = {key: obj.to_dict()
-                                                for key, obj in self.__objects.items()}
+        json_dict: dict[str, dict[str, str]] = {}
+        for key, obj in self.__objects.items():
+            json_dict[key] = obj.to_dict()
+
         with open(self.__file_path, "w", encoding="utf-8") as file:
-            json.dump(json_dict, file)
+            json.dump(json_dict, file, indent="\t")
 
     def reload(self) -> None:
         """Deserialise contents of a json file into __objects."""
         loaded_objs: dict[str, dict] = dict()
         try:
-            with open(self.__file_path, "r", encoding="utf-8") as file:
-                loaded_objs = json.load(file)
+            if os.stat(self.__file_path).st_size > 0:
+                with open(self.__file_path, "r", encoding="utf-8") as file:
+                    loaded_objs = json.load(file)
         except FileNotFoundError:
             pass
 
         for key, obj_dict in loaded_objs.items():
             # Pulling the class from the global NameSpace dictionary
-            self.__objects[key] = globals()[obj_dict["__class__"]](obj_dict)
+            self.__objects[key] = globals()[obj_dict["__class__"]](**obj_dict)

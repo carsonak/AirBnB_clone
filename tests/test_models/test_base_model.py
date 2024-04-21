@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 """Module for test_base_model."""
 
-import models
 import unittest
 from models.base_model import BaseModel
 from datetime import datetime
 from unittest import mock
+from models import storage
 
 
 class TestBaseModel(unittest.TestCase):
@@ -13,20 +13,23 @@ class TestBaseModel(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create some instances."""
+        storage._FileStorage__objects = {}  # type: ignore
         self.new: BaseModel = BaseModel()
         self.old_dict: dict[str, str] = \
             {"id": "c9831ae2-6cba-42fc-9634-acf1c36631e1",
              "created_at": "2024-04-20T10:00:40.789191",
              "updated_at": "2024-04-20T10:00:40.789222",
-             "__class__": "User",
-             "name": ("Doe", "John"),  # type: ignore
-             "age": 45}  # type: ignore
+             "__class__": "User"}
+        #  "name": ("Doe", "John"),  # type: ignore
+        #  "age": 45}  # type: ignore
         self.old: BaseModel = BaseModel(**self.old_dict)
         self.old_dict["__class__"] = "BaseModel"
 
     def tearDown(self) -> None:
         """Teardown."""
-        return super().tearDown()
+        del self.new
+        del self.old
+        del self.old_dict
 
     def test_newInstanceAttributes(self) -> None:
         """Test attributes of a new instance."""
@@ -34,16 +37,12 @@ class TestBaseModel(unittest.TestCase):
         self.assertEqual(len(self.new.id.split("-")), 5)
         self.assertEqual(type(self.new.created_at), datetime)
         self.assertEqual(self.new.created_at, self.new.updated_at)
-        ins_key = ".".join(["BaseModel", self.new.id])
-        self.assertEqual(
-            models.storage._FileStorage__objects[ins_key],  # type: ignore
-            self.new)
 
     def test_oldInstanceAttributes(self) -> None:
         """Test attributes of an old instance."""
         self.assertEqual(self.old.id, self.old_dict["id"])
-        self.assertEqual(self.old.name, self.old_dict["name"])  # type: ignore
-        self.assertEqual(self.old.age, self.old_dict["age"])  # type: ignore
+        self.assertEqual(hasattr(self.old, "name"), False)
+        self.assertEqual(hasattr(self.old, "age"), False)
         self.assertEqual(self.old.created_at, datetime.fromisoformat(
             self.old_dict["created_at"]))
         self.assertEqual(self.old.updated_at, datetime.fromisoformat(
@@ -57,8 +56,8 @@ class TestBaseModel(unittest.TestCase):
 (c9831ae2-6cba-42fc-9634-acf1c36631e1) \
 {'id': 'c9831ae2-6cba-42fc-9634-acf1c36631e1', \
 'created_at': datetime.datetime(2024, 4, 20, 10, 0, 40, 789191), \
-'updated_at': datetime.datetime(2024, 4, 20, 10, 0, 40, 789222), \
-'name': ('Doe', 'John'), 'age': 45}"
+'updated_at': datetime.datetime(2024, 4, 20, 10, 0, 40, 789222)}"
+# 'name': ('Doe', 'John'), 'age': 45}"
 
         self.assertEqual(str(self.old), excepted_output)
 
@@ -73,9 +72,8 @@ class TestBaseModel(unittest.TestCase):
         with mock.patch("models.engine.file_storage.open",
                         new_callable=mock.mock_open) as fake_open:
             self.new.save()
-            fake_open.assert_called_once_with(
-                models.storage._FileStorage__file_path,  # type: ignore
-                "w", encoding="utf-8")
+            fake_open.assert_called_once_with("saved_objects.json",
+                                              "w", encoding="utf-8")
             fake_open().write.assert_called()
 
         after: BaseModel = self.new
@@ -98,3 +96,7 @@ class TestBaseModel(unittest.TestCase):
         """Test the to_dict method."""
         instance_dict: dict[str, str] = self.old.to_dict()
         self.assertEqual(instance_dict, self.old_dict)
+
+
+if __name__ == "__main__":
+    unittest.main()

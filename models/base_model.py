@@ -11,17 +11,21 @@ class BaseModel:
 
     def __init__(self, *args, **kwargs) -> None:
         """Initialise some attributes."""
-        if kwargs:
+        self.id: str = ""
+        self.created_at: datetime = datetime.now()
+        self.updated_at: datetime = self.created_at
+
+        if not kwargs:
+            self.id = str(uuid.uuid4())
+            models.storage.new(self)
+        else:
             kwargs.pop("__class__", None)
             kwargs["created_at"] = datetime.fromisoformat(kwargs["created_at"])
             kwargs["updated_at"] = datetime.fromisoformat(kwargs["updated_at"])
+            dir_set: set = {a for a in dir(self)}
             for key, val in kwargs.items():
-                setattr(self, key, val)
-        else:
-            self.id: str = str(uuid.uuid4())
-            self.created_at: datetime = datetime.now()
-            self.updated_at: datetime = self.created_at
-            models.storage.new(self)
+                if key in dir_set:
+                    setattr(self, key, val)
 
     def __str__(self) -> str:
         """Print details about the instance."""
@@ -34,7 +38,7 @@ class BaseModel:
 
     def to_dict(self) -> dict[str, str]:
         """Return the __dict__ attribute of an instance."""
-        ins_dict: dict = dict(self.__dict__)
+        ins_dict: dict = dict(**self.__dict__)
         ins_dict["__class__"] = self.__class__.__name__
         ins_dict["created_at"] = self.created_at.isoformat()
         ins_dict["updated_at"] = self.updated_at.isoformat()

@@ -99,11 +99,10 @@ class HBNBCommand(cmd.Cmd):
 
         ins_key: str = ".".join(args[:2])
         try:
-            del models.storage._FileStorage__objects[ins_key]  # type: ignore
             models.storage._FileStorage__objects.pop(ins_key)  # type: ignore
             models.storage.save()
         except KeyError:
-            print("** instance id missing **")
+            print("** no instance found **")
 
     def do_all(self, line: str) -> None:
         """Print a list of all objects or just of the specified class.
@@ -145,7 +144,7 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
 
-        args: list[str] = line.split(maxsplit=2)
+        args: list[str] = line.split(maxsplit=4)
         if args[0] not in self.__available_classes:
             print("** class doesn't exist **")
             return
@@ -168,8 +167,12 @@ class HBNBCommand(cmd.Cmd):
 
         ins: BaseModel = \
             models.storage._FileStorage__objects[ins_key]  # type: ignore
-        setattr(ins, args[2], args[3])
-        ins.save()
+        if args[2] in dir(ins):  # Possible for user to insert code?
+            attr_type: type = type(getattr(ins, args[2]))
+            setattr(ins, args[2], attr_type(args[3]))
+            ins.save()
+        else:
+            print(f"** {args[0]} does not contain attribute '{args[2]}' **")
 
     def emptyline(self) -> bool:
         """Ignore emppty lines."""
