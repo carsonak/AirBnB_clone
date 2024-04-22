@@ -9,8 +9,8 @@ do
     then
         if head -1 "$file" | grep -qvE '^#!'
         then
-            sed -i -E '1i\#!/usr/bin/python3' \
-                -E "1i\"\"\"Module for $(basename -s .py $file).\"\"\"" \
+            sed -Ei -e '1i\#!/usr/bin/python3' \
+                -e "1i\"\"\"Module for $(basename -s .py $file).\"\"\"" \
                 "$file"
         fi
     else
