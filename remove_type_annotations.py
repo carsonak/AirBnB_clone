@@ -10,11 +10,26 @@ class RemoveAnnotations:
     """Class for RemoveAnnotations."""
 
     __annotations_pattern: str = r"""
-    (?P<returns>\ -> # return values annotations
-        (?P<recurse>\ [[:alpha:]]+ # recursive pattern matching
-            ((?P<braces>\[ ([^[\]]+ | (?P&braces))+ \])? | # recursive braces
-        \ \|(?P&recurse)))) |
-    (?P<args_vars>:(?P&recurse)) # variables and function parameter annotations
+    ## Match Type Annotations for Return Values ##
+    (?P<returns>\ ->
+        ## Recursive Matching Annonations ##
+        # Triggered by a word and stopped by the absence of a '|' character.
+        # Meaning this block will keep matching as long as this character
+        # appears after the optional '[]' braces.
+        # The negative look-ahead ensures that class calls within dicts aren't
+        # matched, e.g {"user1": User("Joe")}
+        (?P<recurse>\ [[:alpha:]]+(?![[:alpha:](])
+            ## Recursively Match Square Braces ##
+            # A '[' triggers the recursion and a '[' stops it.
+            # The quantifier '+' ensures this is repeated indefinetly.
+            # To prevent the recursion afromm matching infinitely, a ']'is our
+            # base case where the recursion must end with it, this effectively
+            # matches everything within the outer most brackets.
+            # The quantifier '?' makes the braces optional.
+            ((?P<braces>\[ ([^[\]]+ | (?P&braces))+ \])? | \ \|(?P&recurse)))) |
+    ## Match Type Annotations for Variables and Function Parameters ##
+    # Repeat same recursion.
+    (?P<args_vars>:(?P&recurse))
     """
     __directives_pattern: str = r"""\#(?P<directives>\ type:\ \w+$)"""
     __imports_pattern: str = r"""
@@ -24,7 +39,7 @@ class RemoveAnnotations:
     def __init__(self, py_files: str | tuple[str, ...] = (),
                  folders: str | tuple[str, ...] = (),
                  flags: int = 0) -> None:
-        """Initialise some instance attributes."""
+        """Initialise instance attributes."""
         self.__pattern_object: regex.Pattern | None = None
         self.__folders_dict: dict[str, tuple[str, ...]] = {}
         self.py_files: str | tuple[str, ...] = py_files  # type: ignore
@@ -33,7 +48,7 @@ class RemoveAnnotations:
 
     @property
     def flags(self) -> int:
-        """Return self.flags."""
+        """Return current set flags."""
         return self.__flags
 
     @flags.setter
@@ -51,7 +66,12 @@ class RemoveAnnotations:
 
     @py_files.setter
     def py_files(self, py_files: str | tuple[str, ...]) -> None:
-        """Check file extensions and store paths."""
+        """Check for .py file extensions and store the paths.
+
+        Args:
+            py_files [str | tuple[str, ...]]: It is either a path to a single
+            python script or a tuple of multiple paths.
+        """
         if type(py_files) is str:
             if os.path.splitext(py_files)[1] == ".py":
                 self.__py_files = tuple([py_files])
@@ -67,8 +87,10 @@ class RemoveAnnotations:
         else:
             raise TypeError("py_file must be a string or a tuple of strings")
 
-        self.__folders_dict["00 unknown"] = self.__py_files
-        print(f"Files in cache: {len(self.__py_files)}")
+        p_len: int = len(self.__py_files)
+        if p_len:
+            self.__folders_dict["00 unknown"] = self.__py_files
+            print(f"Files in cache: {p_len}")
 
     @property
     def folders(self) -> tuple[str, ...]:
@@ -77,7 +99,12 @@ class RemoveAnnotations:
 
     @folders.setter
     def folders(self, folders: str | tuple[str, ...]) -> None:
-        """Extract Python files from directories and store the paths."""
+        """Extract Python files from directories and store the paths.
+
+        Args:
+            folders [str | tuple[str, ...]]: It is either a path to a single
+            directory with python scripts or a tuple with multiple paths.
+        """
         if type(folders) is str:
             self.__folders = tuple([folders])
         elif type(folders) is tuple:
@@ -102,7 +129,7 @@ class RemoveAnnotations:
                 len(self.py_files), d_len))
 
     def sub(self, regex_str: str = "", repl: str = "", flags: int = 0) -> None:
-        """Substitute repl wherever regex_str matches."""
+        """Substitute repl whenever regex_str matches the text in the file."""
         self.__pattern_object = self.compile(regex_str, flags)
         for filename in self.py_files:
             with open(filename, "r", encoding="utf-8") as file:
@@ -134,7 +161,7 @@ class RemoveAnnotations:
         return self.__pattern_object
 
     def find_matches(self, regex_str: str = "", flags: int = 0) -> dict[str, list[str | list]]:
-        """Return a dicti of filenames and their list of matched strings."""
+        """Return a dict of filenames and their list of matched strings."""
         self.flags = flags
         self.__pattern_object = self.compile(regex_str, self.flags)
         file_matches: dict[str, list[str | list]] = {}
@@ -158,10 +185,10 @@ class RemoveAnnotations:
 
 def main() -> None:
     """Entry Point."""
-    i = RemoveAnnotations(folders="models")
-    i.compile()
-    with open("matched_groups.json", "w", encoding="utf-8") as file:
-        json.dump(i.find_matches(), file, indent="\t")
+    i = RemoveAnnotations(folders=("models", "tests/test_models", "tests/test_models/test_engine"))
+    i.sub()
+    # with open("matched_groups.json", "w", encoding="utf-8") as file:
+    #     json.dump(i.find_matches(), file, indent="\t")
 
 
 if __name__ == "__main__":

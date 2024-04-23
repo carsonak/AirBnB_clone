@@ -18,64 +18,64 @@ from models import storage
 class TestFileStorage(unittest.TestCase):
     """Tests for FileStorage."""
 
-    def tearDown(self) -> None:
+    def tearDown(self):
         """Delete created instances."""
         del self.storage
         del self.json_file_contents
         del self.objects_dict
 
-    def test_instanceAttributes(self) -> None:
+    def test_instanceAttributes(self):
         """Check that the instance has the required attributes."""
         self.assertIsInstance(
-            self.storage._FileStorage__file_path,  # type: ignore
+            self.storage._FileStorage__file_path,  # type
             str)
         self.assertEqual(
-            self.storage._FileStorage__file_path.endswith(  # type: ignore
+            self.storage._FileStorage__file_path.endswith(  # type
                 ".json"),
             True)
         self.assertIsInstance(
-            self.storage._FileStorage__objects,  # type: ignore
+            self.storage._FileStorage__objects,  # type
             dict)
 
-    def test_allEmpty(self) -> None:
+    def test_allEmpty(self):
         """Test the all method with empty __objects."""
         self.assertEqual(self.storage.all(), {})
 
-    def test_allNotEmpty(self) -> None:
+    def test_allNotEmpty(self):
         """Test the all method with a non-empty __objects."""
-        self.storage._FileStorage__objects = self.objects_dict  # type: ignore
+        self.storage._FileStorage__objects = self.objects_dict  # type
         self.assertEqual(self.storage.all(), self.objects_dict)
 
-    def test_new(self) -> None:
+    def test_new(self):
         """Test the method new."""
         for key, obj in self.objects_dict.items():
             with self.subTest(key=key, obj=obj):
                 self.storage.new(obj)
                 self.assertIn(
                     key,
-                    self.storage._FileStorage__objects)  # type: ignore
+                    self.storage._FileStorage__objects)  # type
                 self.assertIsInstance(
-                    self.storage._FileStorage__objects[key],  # type: ignore
+                    self.storage._FileStorage__objects[key],  # type
                     type(obj))
 
-        self.assertEqual(self.storage._FileStorage__objects,  # type: ignore
+        self.assertEqual(self.storage._FileStorage__objects,  # type
                          self.objects_dict)
 
-    def test_saveEmpty(self) -> None:
+    def test_saveEmpty(self):
         """Test the save method when __objects is empty."""
         with mock.patch("models.engine.file_storage.open",
                         new=mock.mock_open()) as fake_file:
             self.storage.save()
             fake_file.assert_called_once_with(
-                self.storage._FileStorage__file_path,  # type: ignore
+                self.storage._FileStorage__file_path,  # type
                 "w", encoding="utf-8")
             fake_file().write.assert_called()
 
-    def setUp(self) -> None:
+    def setUp(self):
         """Setup some data for testing."""
-        storage._FileStorage__objects = {}  # type: ignore
-        self.storage: FileStorage = FileStorage()
-        self.json_file_contents: str = json.dumps({
+        storage._FileStorage__objects = {}  # type
+        self.storage = FileStorage()
+        self.json_file_contents = json.dumps({
             "User.368bf4c9-d31d-488f-a0df-82956df65d87": {
                 "id": "368bf4c9-d31d-488f-a0df-82956df65d87",
                 "created_at": "2024-04-20T22:54:27.010738",
@@ -146,7 +146,7 @@ class TestFileStorage(unittest.TestCase):
             }
         }, indent="\t")
 
-        self.objects_dict: dict[str, BaseModel] = {
+        self.objects_dict = {
             "User.368bf4c9-d31d-488f-a0df-82956df65d87": User(
                 id="368bf4c9-d31d-488f-a0df-82956df65d87",
                 created_at="2024-04-20T22:54:27.010738",

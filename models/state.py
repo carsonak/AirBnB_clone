@@ -7,4 +7,4 @@ from models.base_model import BaseModel
 class State(BaseModel):
     """Class for State."""
 
-    name: str = ""
+    name = ""
