@@ -6,34 +6,42 @@ import os
 import json
 
 
-class RemoveAnnotations:
-    """Class for RemoveAnnotations."""
+class PyRegexEdit:
+    """Class for PyRegexEdit."""
 
     __annotations_pattern: str = r"""
-    ## Match Type Annotations for Return Values ##
+    ## Return Value Type Annotations ##
+    # Must be preceeded by ' ->'
     (?P<returns>\ ->
-        ## Recursive Matching Annonations ##
-        # Triggered by a word and stopped by the absence of a '|' character.
-        # Meaning this block will keep matching as long as this character
-        # appears after the optional '[]' braces.
-        # The negative look-ahead ensures that class calls within dicts aren't
-        # matched, e.g {"user1": User("Joe")}
-        (?P<recurse>\ [[:alpha:]]+(?![[:alpha:](])
-            ## Recursively Match Square Braces ##
-            # A '[' triggers the recursion and a '[' stops it.
-            # The quantifier '+' ensures this is repeated indefinetly.
-            # To prevent the recursion afromm matching infinitely, a ']'is our
-            # base case where the recursion must end with it, this effectively
-            # matches everything within the outer most brackets.
-            # The quantifier '?' makes the braces optional.
-            ((?P<braces>\[ ([^[\]]+ | (?P&braces))+ \])? | \ \|(?P&recurse)))) |
-    ## Match Type Annotations for Variables and Function Parameters ##
-    # Repeat same recursion.
-    (?P<args_vars>:(?P&recurse))
+        (?P<annotation>\ #
+            # Type name should be a valid Python name
+            (?P<opt_unquoted_quoted>[[:alpha:]_]\w*|["'][[:upper:]_]\w+["'])
+            # Followed by a '[', '|' or nothing
+            (?P<opt_brace_slash_none>
+                # If a brace match valid type annotations till the last ']'
+                # in the sequence
+                (?P<sqr_braces>\[ (?P&opt_unquoted_quoted)
+                    # Option if comma,
+                    (?P<opt_comma_brace_slash_loop>,
+                        # Check if ' ...' other wise match another annotation
+                        (?P<opt_elipses_annotation>\ \.{3} | (?P&annotation)) |
+                    # if a brace match another brace sequence
+                    (?P&sqr_braces) |
+                    # if ' |' match another annotation
+                    \ \|(?P&annotation))*
+                \]) |
+                # Else match '| ' and more valid type annotations
+                \ \|(?P&annotation)
+            )?
+        )
+    ): |
+    ## Function Parameters and Variables Type Annotations ##
+    # Skip through any dictionaries before trying to match an annotation
+    (?:{[^\{\}]*} | (?P<params_vars>:(?P&annotation)) (?:[,\)] | \ =))
     """
-    __directives_pattern: str = r"""\#(?P<directives>\ type:\ \w+$)"""
+    __directives_pattern: str = r"""\#(?P<directives>\ type:\ .+)$"""
     __imports_pattern: str = r"""
-    (?P<imports>(import\ typing | from\ typing(\.\w+)*\ import\ \w+(,\ \w+)*$))
+    (?P<imports>^\ *(?:import\ typing | from\ typing(?:\.\w+)*\ import\ \w+(?:,\ \w+)*))
     """
 
     def __init__(self, py_files: str | tuple[str, ...] = (),
@@ -153,24 +161,32 @@ class RemoveAnnotations:
                 compile_str = self.__annotations_pattern + r"|" +\
                     self.__directives_pattern + r"|" +\
                     self.__imports_pattern
-                self.flags = int(regex.VERBOSE | flags)
+                self.flags = int(regex.MULTILINE |
+                                 regex.VERBOSE | regex.V1 | flags)
 
             self.__pattern_object = regex.compile(
                 compile_str, flags=self.flags)
 
         return self.__pattern_object
 
-    def find_matches(self, regex_str: str = "", flags: int = 0) -> dict[str, list[str | list]]:
-        """Return a dict of filenames and their list of matched strings."""
+    def capturesdict_files(self, regex_str: str = "",
+                           flags: int = 0, file_time: float | None = None) -> dict[str, dict[str, list[str]]]:
+        """Return a dict of filenames with a dict of named capturing groups
+        and their list of captures.
+        """
         self.flags = flags
         self.__pattern_object = self.compile(regex_str, self.flags)
-        file_matches: dict[str, list[str | list]] = {}
+        file_matches: dict[str, dict[str, list[str]]] = {}
         for filename in self.py_files:
             with open(filename, "r", encoding="utf-8") as file:
                 contents: str = file.read()
 
-            file_matches[filename] = self.__pattern_object.findall(
-                contents, overlapped=True)
+            file_matches[filename] = {name: []
+                                      for name in self.__pattern_object.groupindex.keys()}
+            for match_obj in self.__pattern_object.finditer(
+                    contents, overlapped=True, timeout=file_time):
+                for group_name, items in match_obj.capturesdict().items():
+                    file_matches[filename][group_name] += items
 
         return file_matches
 
@@ -185,10 +201,18 @@ class RemoveAnnotations:
 
 def main() -> None:
     """Entry Point."""
-    i = RemoveAnnotations(folders=("models", "tests/test_models", "tests/test_models/test_engine"))
-    i.sub()
-    # with open("matched_groups.json", "w", encoding="utf-8") as file:
-    #     json.dump(i.find_matches(), file, indent="\t")
+    dirs: tuple[str, ...] = ()
+    i = PyRegexEdit(py_files="temp_test.py")
+    # i.sub()
+    clean_dict: dict[str, dict[str, list[str]]] = {}
+    for file_name, captures in i.capturesdict_files().items():
+        clean_dict[file_name] = {}
+        for group, lst in captures.items():
+            if group == "returns" or group == "params_vars" or group == "directives" or group == "imports":
+                clean_dict[file_name][group] = lst
+
+    with open("matched_groups.json", "w", encoding="utf-8") as file:
+        json.dump(clean_dict, file, indent="\t")
 
 
 if __name__ == "__main__":
