@@ -202,7 +202,8 @@ class PyRegexEdit:
 def main() -> None:
     """Entry Point."""
     dirs: tuple[str, ...] = ()
-    i = PyRegexEdit(py_files="temp_test.py")
+    i = PyRegexEdit(folders=("models", "tests/test_models",
+                    "models/engine", "tests/test_models/test_engine"))
     # i.sub()
     clean_dict: dict[str, dict[str, list[str]]] = {}
     for file_name, captures in i.capturesdict_files().items():

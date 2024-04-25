@@ -55,8 +55,8 @@ class TestBaseModel(unittest.TestCase):
         excepted_output = "[BaseModel] \
 (c9831ae2-6cba-42fc-9634-acf1c36631e1) \
 {'id': 'c9831ae2-6cba-42fc-9634-acf1c36631e1', \
-'created_at'.datetime(2024, 4, 20, 10, 0, 40, 789191), \
-'updated_at'.datetime(2024, 4, 20, 10, 0, 40, 789222)}"
+'created_at': datetime.datetime(2024, 4, 20, 10, 0, 40, 789191), \
+'updated_at': datetime.datetime(2024, 4, 20, 10, 0, 40, 789222)}"
 # 'name': ('Doe', 'John'), 'age': 45}"
 
         self.assertEqual(str(self.old), excepted_output)
