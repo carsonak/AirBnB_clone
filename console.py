@@ -167,11 +167,7 @@ class HBNBCommand(cmd.Cmd):
             setattr(ins, args[2], attr_type(args[3]))
             ins.save()
         else:
-            print(f"** {
-                args[0]
-            } does not contain attribute '{
-                args[2]
-            }' **")
+            print(f"** {args[0]} does not contain attribute '{args[2]}' **")
 
     def emptyline(self):
         """Ignore empty lines."""
