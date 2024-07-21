@@ -17,35 +17,34 @@ from models.user import User
 class FileStorage:
     """Class for FileStorage."""
 
-    __file_path: str = "saved_objects.json"
-    __objects: dict[str, BaseModel] = dict()
+    __file_path = 'saved_objects.json'
+    __objects = dict()
 
-    def all(self) -> dict[str, BaseModel]:
+    def all(self):
         """Return a dictionary of all objects."""
         return self.__objects
 
-    def new(self, obj) -> None:
+    def new(self, obj):
         """Add a new object to __objects."""
-        obj_key: str = ".".join([obj.__class__.__name__, obj.id])
+        obj_key = '.'.join([obj.__class__.__name__, obj.id])
         self.__objects[obj_key] = obj
 
-    def save(self) -> None:
+    def save(self):
         """Serialise all objects in __objects to a json file."""
-        json_dict: dict[str, dict[str, str]] = {}
+        json_dict = {}
         for key, obj in self.__objects.items():
             json_dict[key] = obj.to_dict()
 
-        with open(self.__file_path, "w", encoding="utf-8") as file:
-            json.dump(json_dict, file, indent="\t")
+        with open(self.__file_path, 'w', encoding='utf-8') as file:
+            json.dump(json_dict, file, indent='\t')
 
-    def reload(self) -> None:
+    def reload(self):
         """Deserialise contents of a json file into __objects."""
-        loaded_objs: dict[str, dict] = dict()
+        loaded_objs = dict()
         with suppress(FileNotFoundError):
             if os.stat(self.__file_path).st_size > 0:
-                with open(self.__file_path, "r", encoding="utf-8") as file:
+                with open(self.__file_path, 'r', encoding='utf-8') as file:
                     loaded_objs = json.load(file)
 
         for key, obj_dict in loaded_objs.items():
-            # Pulling the class from the global NameSpace dictionary
-            self.__objects[key] = globals()[obj_dict["__class__"]](**obj_dict)
+            self.__objects[key] = globals()[obj_dict['__class__']](**obj_dict)
