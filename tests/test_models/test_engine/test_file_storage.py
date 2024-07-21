@@ -4,78 +4,79 @@
 import json
 import unittest
 from unittest import mock
-from models.engine.file_storage import FileStorage
-from models.base_model import BaseModel
-from models.user import User
-from models.place import Place
+
 from models.amenity import Amenity
+from models.base_model import BaseModel
 from models.city import City
+from models.engine.file_storage import FileStorage
+from models.place import Place
 from models.review import Review
 from models.state import State
 from models import storage
+from models.user import User
 
 
 class TestFileStorage(unittest.TestCase):
     """Tests for FileStorage."""
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """Delete created instances."""
         del self.storage
         del self.json_file_contents
         del self.objects_dict
 
-    def test_instanceAttributes(self):
+    def test_instanceAttributes(self) -> None:
         """Check that the instance has the required attributes."""
         self.assertIsInstance(
-            self.storage._FileStorage__file_path,  # type
+            self.storage._FileStorage__file_path,  # type: ignore
             str)
         self.assertEqual(
-            self.storage._FileStorage__file_path.endswith(  # type
+            self.storage._FileStorage__file_path.endswith(  # type: ignore
                 ".json"),
             True)
         self.assertIsInstance(
-            self.storage._FileStorage__objects,  # type
+            self.storage._FileStorage__objects,  # type: ignore
             dict)
 
-    def test_allEmpty(self):
+    def test_allEmpty(self) -> None:
         """Test the all method with empty __objects."""
         self.assertEqual(self.storage.all(), {})
 
-    def test_allNotEmpty(self):
+    def test_allNotEmpty(self) -> None:
         """Test the all method with a non-empty __objects."""
-        self.storage._FileStorage__objects = self.objects_dict  # type
+        self.storage._FileStorage__objects = self.objects_dict  # type: ignore
         self.assertEqual(self.storage.all(), self.objects_dict)
 
-    def test_new(self):
+    def test_new(self) -> None:
         """Test the method new."""
         for key, obj in self.objects_dict.items():
             with self.subTest(key=key, obj=obj):
                 self.storage.new(obj)
                 self.assertIn(
                     key,
-                    self.storage._FileStorage__objects)  # type
+                    self.storage._FileStorage__objects)  # type: ignore
                 self.assertIsInstance(
-                    self.storage._FileStorage__objects[key],  # type
+                    self.storage._FileStorage__objects[key],  # type: ignore
                     type(obj))
 
-        self.assertEqual(self.storage._FileStorage__objects,  # type
+        self.assertEqual(self.storage._FileStorage__objects,  # type: ignore
                          self.objects_dict)
 
-    def test_saveEmpty(self):
+    def test_saveEmpty(self) -> None:
         """Test the save method when __objects is empty."""
         with mock.patch("models.engine.file_storage.open",
                         new=mock.mock_open()) as fake_file:
             self.storage.save()
             fake_file.assert_called_once_with(
-                self.storage._FileStorage__file_path,  # type
+                self.storage._FileStorage__file_path,  # type: ignore
                 "w", encoding="utf-8")
             fake_file().write.assert_called()
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Setup some data for testing."""
-        storage._FileStorage__objects = {}  # type
-        self.storage = FileStorage()
-        self.json_file_contents = json.dumps({
+        storage._FileStorage__objects = {}  # type: ignore
+        self.storage: FileStorage = FileStorage()
+        self.json_file_contents: str = json.dumps({
             "User.368bf4c9-d31d-488f-a0df-82956df65d87": {
                 "id": "368bf4c9-d31d-488f-a0df-82956df65d87",
                 "created_at": "2024-04-20T22:54:27.010738",
@@ -146,7 +147,7 @@ class TestFileStorage(unittest.TestCase):
             }
         }, indent="\t")
 
-        self.objects_dict = {
+        self.objects_dict: dict[str, BaseModel] = {
             "User.368bf4c9-d31d-488f-a0df-82956df65d87": User(
                 id="368bf4c9-d31d-488f-a0df-82956df65d87",
                 created_at="2024-04-20T22:54:27.010738",

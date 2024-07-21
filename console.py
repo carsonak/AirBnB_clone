@@ -3,26 +3,24 @@
 
 import cmd
 import models
-from models.base_model import BaseModel
-from models.user import User
-from models.place import Place
-from models.state import State
-from models.city import City
+
 from models.amenity import Amenity
+from models.base_model import BaseModel
+from models.city import City
+from models.place import Place
 from models.review import Review
+from models.state import State
+from models.user import User
 
 
 class HBNBCommand(cmd.Cmd):
     """Class for the HBNB shell."""
 
     prompt: str = "(hbnb) "
-    __available_classes: dict[str, type] = {"BaseModel": BaseModel,
-                                            "User": User,
-                                            "Place": Place,
-                                            "State": State,
-                                            "City": City,
-                                            "Amenity": Amenity,
-                                            "Review": Review}
+    __available_classes: dict[str, type] = {
+        "BaseModel": BaseModel, "User": User, "Place": Place,
+        "State": State, "City": City, "Amenity": Amenity, "Review": Review
+    }
 
     def do_create(self, line: str) -> None:
         """Create and save a new class instance.
@@ -33,7 +31,7 @@ class HBNBCommand(cmd.Cmd):
             <ClassName>: mandatory name of the class to be instantiated. The
             class should be one of BaseModel, User, Place, State, City,
             Amenity or Review.
-        """
+        """  # noqa: D417
         if line:
             classname: str = line.split(maxsplit=1)[0]
             if classname in self.__available_classes:
@@ -54,7 +52,7 @@ class HBNBCommand(cmd.Cmd):
         Arguments:
             <ClassName>: mandatory class name of the instance.
             <id>: mandatory unique id of the instance.
-        """
+        """  # noqa: D417
         if not line:
             print("** class name missing **")
             return
@@ -83,7 +81,7 @@ class HBNBCommand(cmd.Cmd):
         Arguments:
             <ClassName>: mandatory class name of the instance.
             <id>: mandatory unique id of the instance.
-        """
+        """  # noqa: D417
         if not line:
             print("** class name missing **")
             return
@@ -111,7 +109,7 @@ class HBNBCommand(cmd.Cmd):
 
         Arguments:
             [ClassName]: optional class name of the instances to be printed.
-        """
+        """  # noqa: D417
         classname: str = line.split(maxsplit=1)[0] if line else ""
 
         if classname and classname not in self.__available_classes:
@@ -139,7 +137,7 @@ class HBNBCommand(cmd.Cmd):
             <id>: mandatory id of the instance.
             <attribute name>: mandatory name of the attribute to be updated.
             <attribute value>: a string with the new value of the attribute.
-        """
+        """  # noqa: D417
         if not line:
             print("** class name missing **")
             return
@@ -172,13 +170,13 @@ class HBNBCommand(cmd.Cmd):
             setattr(ins, args[2], attr_type(args[3]))
             ins.save()
         else:
-            print(f"** {args[0]} does not contain attribute '{args[2]}' **")
+            print(f"** {args[0]} does not contain attribute '{args[2]}' **")  # noqa: B907
 
     def emptyline(self) -> bool:
-        """Ignore emppty lines."""
+        """Ignore empty lines."""
         return False
 
-    def do_EOF(self, line: str) -> bool:
+    def do_EOF(self, line: str) -> bool:  # noqa: N802
         """Exit the console."""
         print()
         return True
@@ -191,5 +189,5 @@ class HBNBCommand(cmd.Cmd):
         return True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     HBNBCommand().cmdloop()
