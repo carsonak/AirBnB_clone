@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """Module for user."""
 
 from models.base_model import BaseModel
@@ -7,7 +7,7 @@ from models.base_model import BaseModel
 class User(BaseModel):
     """Class for user."""
 
-    email = ''
-    password = ''
-    first_name = ''
-    last_name = ''
+    email: str = ""
+    password: str = ""
+    first_name: str = ""
+    last_name: str = ""

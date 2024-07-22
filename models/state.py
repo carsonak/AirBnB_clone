@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """Module for state."""
 
 from models.base_model import BaseModel
@@ -7,4 +7,4 @@ from models.base_model import BaseModel
 class State(BaseModel):
     """Class for State."""
 
-    name = ''
+    name: str = ""
