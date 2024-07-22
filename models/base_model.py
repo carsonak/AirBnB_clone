@@ -23,7 +23,7 @@ class BaseModel:
             kwargs.pop("__class__", None)
             kwargs["created_at"] = datetime.fromisoformat(kwargs["created_at"])
             kwargs["updated_at"] = datetime.fromisoformat(kwargs["updated_at"])
-            dir_set: set = {a for a in dir(self)}
+            dir_set: set = set(dir(self))
             for key, val in kwargs.items():
                 if key in dir_set:
                     setattr(self, key, val)

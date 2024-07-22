@@ -54,8 +54,7 @@ class TestFileStorage(unittest.TestCase):
             with self.subTest(key=key, obj=obj):
                 self.storage.new(obj)
                 self.assertIn(
-                    key,
-                    self.storage._FileStorage__objects)  # type: ignore
+                    key, self.storage._FileStorage__objects)  # type: ignore
                 self.assertIsInstance(
                     self.storage._FileStorage__objects[key],  # type: ignore
                     type(obj))

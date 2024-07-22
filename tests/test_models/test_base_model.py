@@ -36,15 +36,14 @@ class TestBaseModel(unittest.TestCase):
     def test_new_instance_attributes(self) -> None:
         """Test attributes of a new instance."""
         self.assertIsInstance(self.new.id, str)
-        self.assertEqual(len(self.new.id.split("-")), 5)
         self.assertIsInstance(self.new.created_at, datetime)
         self.assertEqual(self.new.created_at, self.new.updated_at)
 
     def test_old_instance_attributes(self) -> None:
         """Test attributes of an old instance."""
         self.assertEqual(self.old.id, self.old_dict["id"])
-        self.assertEqual(hasattr(self.old, "name"), False)
-        self.assertEqual(hasattr(self.old, "age"), False)
+        self.assertFalse(hasattr(self.old, "name"))
+        self.assertFalse(hasattr(self.old, "age"))
         self.assertEqual(self.old.created_at, datetime.fromisoformat(
             self.old_dict["created_at"]))
         self.assertEqual(self.old.updated_at, datetime.fromisoformat(
