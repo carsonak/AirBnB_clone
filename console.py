@@ -148,30 +148,30 @@ class HBNBCommand(cmd.Cmd):
             print("** class doesn't exist **")
             return
 
-        if len(args) < 2:
-            print("** instance id missing **")
-            return
-
+        cls_name: str = args[0]
         ins_key: str = ".".join(args[:2])
-        if ins_key not in models.storage._FileStorage__objects:  # type: ignore
+        if ins_key not in models.storage.all():
             print("** instance id missing **")
             return
 
         if len(args) < 3:
             print("** attribute name missing **")
             return
-        elif len(args) < 4:
+
+        attr_name: str = args[2]
+        if len(args) < 4:
             print("** value missing **")
             return
 
-        ins: BaseModel = \
-            models.storage._FileStorage__objects[ins_key]  # type: ignore
-        if args[2] in dir(ins):  # Possible for user to insert code?
-            attr_type: type = type(getattr(ins, args[2]))
-            setattr(ins, args[2], attr_type(args[3]))
-            ins.save()
+        value: str = args[3]
+        instance: BaseModel = models.storage.all()[ins_key]
+        if hasattr(instance, attr_name):
+            attr_type: type = type(getattr(instance, attr_name))
+            setattr(instance, attr_name, attr_type(value))
         else:
-            print(f"** {args[0]} does not contain attribute '{args[2]}' **")
+            setattr(instance, attr_name, value)
+
+        instance.save()
 
     def emptyline(self) -> bool:
         """Ignore empty lines."""
