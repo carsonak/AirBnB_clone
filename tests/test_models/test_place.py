@@ -4,11 +4,16 @@
 from datetime import datetime
 import unittest
 
+import models
 from models.place import Place
 
 
 class TestPlace(unittest.TestCase):
     """Tests for Place."""
+
+    def tearDown(self) -> None:
+        """Delete created instances."""
+        models.storage._FileStorage__objects.clear()  # type: ignore
 
     def test_new_instance_attributes(self) -> None:
         """Test attributes of a new instance."""

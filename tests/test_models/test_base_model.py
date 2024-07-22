@@ -6,8 +6,8 @@ import typing
 import unittest
 from unittest import mock
 
+import models
 from models.base_model import BaseModel
-from models import storage
 
 
 class TestBaseModel(unittest.TestCase):
@@ -15,7 +15,6 @@ class TestBaseModel(unittest.TestCase):
 
     def setUp(self) -> None:
         """Create some instances."""
-        storage._FileStorage__objects = {}  # type: ignore
         self.new: BaseModel = BaseModel()
         self.old_dict: typing.Dict[str, str] = \
             {"id": "c9831ae2-6cba-42fc-9634-acf1c36631e1",
@@ -28,7 +27,8 @@ class TestBaseModel(unittest.TestCase):
         self.old_dict["__class__"] = "BaseModel"
 
     def tearDown(self) -> None:
-        """Teardown."""
+        """Delete created instances."""
+        models.storage._FileStorage__objects.clear()  # type: ignore
         del self.new
         del self.old
         del self.old_dict

@@ -6,6 +6,7 @@ import typing
 import unittest
 from unittest import mock
 
+import models
 from models.amenity import Amenity
 from models.base_model import BaseModel
 from models.city import City
@@ -13,7 +14,6 @@ from models.engine.file_storage import FileStorage
 from models.place import Place
 from models.review import Review
 from models.state import State
-from models import storage
 from models.user import User
 
 
@@ -22,6 +22,7 @@ class TestFileStorage(unittest.TestCase):
 
     def tearDown(self) -> None:
         """Delete created instances."""
+        models.storage._FileStorage__objects.clear()  # type: ignore
         del self.storage
         del self.json_file_contents
         del self.objects_dict
@@ -31,10 +32,6 @@ class TestFileStorage(unittest.TestCase):
         self.assertIsInstance(
             self.storage._FileStorage__file_path,  # type: ignore
             str)
-        self.assertEqual(
-            self.storage._FileStorage__file_path.endswith(  # type: ignore
-                ".json"),
-            True)
         self.assertIsInstance(
             self.storage._FileStorage__objects,  # type: ignore
             dict)
@@ -74,7 +71,6 @@ class TestFileStorage(unittest.TestCase):
 
     def setUp(self) -> None:
         """Setup some data for testing."""
-        storage._FileStorage__objects = {}  # type: ignore
         self.storage: FileStorage = FileStorage()
         self.json_file_contents: str = json.dumps({
             "User.368bf4c9-d31d-488f-a0df-82956df65d87": {

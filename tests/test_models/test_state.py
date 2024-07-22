@@ -4,11 +4,16 @@
 from datetime import datetime
 import unittest
 
+import models
 from models.state import State
 
 
 class TestState(unittest.TestCase):
     """Tests for State."""
+
+    def tearDown(self) -> None:
+        """Delete created instances."""
+        models.storage._FileStorage__objects.clear()  # type: ignore
 
     def test_new_instance_attributes(self) -> None:
         """Test attributes of a new instance."""
