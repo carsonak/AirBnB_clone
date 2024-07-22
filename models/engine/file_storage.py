@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """Module for file_storage."""
 
 from contextlib import suppress
@@ -37,7 +37,7 @@ class FileStorage:
             json_dict[key] = obj.to_dict()
 
         with open(self.__file_path, "w", encoding="utf-8") as file:
-            json.dump(json_dict, file, indent="\t")
+            json.dump(json_dict, file, indent="    ")
 
     def reload(self) -> None:
         """Deserialize contents of a json file into __objects."""
