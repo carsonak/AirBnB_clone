@@ -68,11 +68,11 @@ class HBNBCommand(cmd.Cmd):
             return
 
         ins_key: str = ".".join(args[:2])
-        if ins_key not in models.storage._FileStorage__objects:  # type: ignore
-            print("** instance id missing **")
+        if ins_key not in models.storage.all():
+            print("** no instance found **")
             return
 
-        print(models.storage._FileStorage__objects[ins_key])  # type: ignore
+        print(models.storage.all()[ins_key])
 
     def do_destroy(self, line: str) -> None:
         """Delete the specified instance.
@@ -98,7 +98,7 @@ class HBNBCommand(cmd.Cmd):
 
         ins_key: str = ".".join(args[:2])
         try:
-            models.storage._FileStorage__objects.pop(ins_key)  # type: ignore
+            models.storage.all().pop(ins_key)
             models.storage.save()
         except KeyError:
             print("** no instance found **")
@@ -148,10 +148,13 @@ class HBNBCommand(cmd.Cmd):
             print("** class doesn't exist **")
             return
 
-        cls_name: str = args[0]
+        if len(args) < 2:
+            print("** instance id missing **")
+            return
+
         ins_key: str = ".".join(args[:2])
         if ins_key not in models.storage.all():
-            print("** instance id missing **")
+            print("** no instance found **")
             return
 
         if len(args) < 3:
